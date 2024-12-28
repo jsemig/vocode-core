@@ -221,3 +221,8 @@ class RESTfulAgentText(RESTfulAgentOutput, type=RESTfulAgentOutputType.TEXT):  #
 
 class RESTfulAgentEnd(RESTfulAgentOutput, type=RESTfulAgentOutputType.END):  # type: ignore
     pass
+
+
+
+class OnsaiGPTAgentConfig(AgentConfig, type=AgentType.CHAT_GPT.value):  # type: ignore
+    base_url: Optional[str] = None
