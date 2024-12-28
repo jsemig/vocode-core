@@ -225,4 +225,6 @@ class RESTfulAgentEnd(RESTfulAgentOutput, type=RESTfulAgentOutputType.END):  # t
 
 
 class OnsaiGPTAgentConfig(AgentConfig, type=AgentType.CHAT_GPT.value):  # type: ignore
-    base_url: Optional[str] = None
+    base_url: Optional[str] 
+    send_raw_ssml: bool = True
+
