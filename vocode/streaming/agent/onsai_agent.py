@@ -59,6 +59,7 @@ class OnsaiGPTAgent(RespondAgent[OnsaiGPTAgentConfigType]):
         self.onsai_client = httpx.AsyncClient(
             base_url=str(agent_config.base_url),
         )
+        self.should_stop = False
         logger.info(f"Initialized OnsaiGPTAgent with config: {agent_config}")
 
     async def token_generator(
@@ -106,6 +107,7 @@ class OnsaiGPTAgent(RespondAgent[OnsaiGPTAgentConfigType]):
         response.raise_for_status()
         json = response.json()
         onsai_response = OnsaiGPTOutput.model_validate(json)
+        self.should_stop = onsai_response.end_conversation
 
         using_input_streaming_synthesizer = (
             self.conversation_state_manager.using_input_streaming_synthesizer()
@@ -128,20 +130,15 @@ class OnsaiGPTAgent(RespondAgent[OnsaiGPTAgentConfigType]):
             is_interruptible=True,
         )
 
-        if onsai_response.end_conversation:
-            # TODO: wait for conversation state manager to finish
-            # await self.terminate()
-            pass
-
-
-
     async def handle_generate_response(
         self,
         transcription: Transcription,
         agent_input: AgentInput,
     ) -> bool:
-        return True
-
+        await super().handle_generate_response(
+            transcription=transcription, agent_input=agent_input
+        )
+        return self.should_stop
 
     async def terminate(self):
         await self.conversation_state_manager.terminate_conversation()
