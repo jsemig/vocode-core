@@ -9,6 +9,7 @@ from fastapi import FastAPI
 # Local application/library specific imports
 from vocode.logging import configure_pretty_logging
 from vocode.streaming.models.agent import OnsaiGPTAgentConfig
+from vocode.streaming.models.message import SSMLMessage
 from vocode.streaming.models.synthesizer import AzureSynthesizerConfig
 from vocode.streaming.models.telephony import TwilioConfig
 from vocode.streaming.models.transcriber import AzureTranscriberConfig
@@ -52,6 +53,10 @@ telephony_server = TelephonyServer(
                     "Auf Wiedersehen",
                     "bye" "goodbye",
                 ],
+                initial_message=SSMLMessage(
+                    ssml="<speak xmlns='https://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' version='1.0' xml:lang='de-DE'><voice name='de-DE-ConradNeural'><mstts:silence value='500ms' type='Tailing-exact' /><prosody pitch='0%' rate='15%'>Danke für Ihren Anruf. Wie kann ich Ihnen helfen?</prosody></voice></speak>",
+                    text="Hello, how can I help you?",
+                ),
             ),
             synthesizer_config=AzureSynthesizerConfig.from_telephone_output_device(
                 azure_speech_key=os.environ["AZURE_SPEECH_KEY"],

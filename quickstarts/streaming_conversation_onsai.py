@@ -8,6 +8,7 @@ from vocode.helpers import create_streaming_microphone_input_and_speaker_output
 from vocode.logging import configure_pretty_logging
 from vocode.streaming.agent.onsai_agent import OnsaiGPTAgent
 from vocode.streaming.models.agent import OnsaiGPTAgentConfig
+from vocode.streaming.models.message import SSMLMessage
 from vocode.streaming.models.synthesizer import AzureSynthesizerConfig
 from vocode.streaming.models.transcriber import (
     DeepgramTranscriberConfig,
@@ -20,6 +21,7 @@ from vocode.streaming.transcriber.deepgram_transcriber import DeepgramTranscribe
 configure_pretty_logging()
 
 load_dotenv()
+
 
 class Settings(BaseSettings):
     """
@@ -54,20 +56,29 @@ async def main():
     )
 
     conversation = StreamingConversation(
-        output_device=speaker_output, # type: ignore
+        output_device=speaker_output,  # type: ignore
         transcriber=DeepgramTranscriber(
             DeepgramTranscriberConfig.from_input_device(
-                microphone_input, # type: ignore
+                microphone_input,  # type: ignore
                 endpointing_config=PunctuationEndpointingConfig(),
                 api_key=settings.deepgram_api_key,
             ),
-        ), # type: ignore
+        ),  # type: ignore
         agent=OnsaiGPTAgent(
             OnsaiGPTAgentConfig(
                 base_url="http://localhost:8000",
                 send_raw_ssml=True,
                 allowed_idle_time_seconds=30,
-                goodbye_phrases=["Verabschiedung", "Tschüss", "Auf Wiedersehen", "bye" "goodbye"],
+                goodbye_phrases=[
+                    "Verabschiedung",
+                    "Tschüss",
+                    "Auf Wiedersehen",
+                    "bye" "goodbye",
+                ],
+                initial_message=SSMLMessage(
+                    ssml="<speak xmlns='https://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' version='1.0' xml:lang='de-DE'><voice name='de-DE-ConradNeural'><mstts:silence value='500ms' type='Tailing-exact' /><prosody pitch='0%' rate='15%'>Danke für Ihren Anruf. Wie kann ich Ihnen helfen?</prosody></voice></speak>",
+                    text="hello",
+                ),
             )
         ),
         synthesizer=AzureSynthesizer(
@@ -78,7 +89,9 @@ async def main():
     )
     await conversation.start()
     print("Conversation started, press Ctrl+C to end")
-    signal.signal(signal.SIGINT, lambda _0, _1: asyncio.create_task(conversation.terminate()))
+    signal.signal(
+        signal.SIGINT, lambda _0, _1: asyncio.create_task(conversation.terminate())
+    )
     while conversation.is_active():
         chunk = await microphone_input.get_audio()
         conversation.receive_audio(chunk)
