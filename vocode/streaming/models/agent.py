@@ -56,6 +56,7 @@ class AgentType(str, Enum):
     WEBSOCKET_USER_IMPLEMENTED = "agent_websocket_user_implemented"
     ACTION = "agent_action"
     LANGCHAIN = "agent_langchain"
+    ONSAI_AGENT = "agent_onsai"
 
 
 class FillerAudioConfig(BaseModel):
@@ -169,7 +170,8 @@ class GroqAgentConfig(AgentConfig, type=AgentType.GROQ.value):  # type: ignore
 
 
 class InformationRetrievalAgentConfig(
-    AgentConfig, type=AgentType.INFORMATION_RETRIEVAL.value  # type: ignore
+    AgentConfig,
+    type=AgentType.INFORMATION_RETRIEVAL.value,  # type: ignore
 ):
     recipient_descriptor: str
     caller_descriptor: str
@@ -189,7 +191,8 @@ class GPT4AllAgentConfig(AgentConfig, type=AgentType.GPT4ALL.value):  # type: ig
 
 
 class RESTfulUserImplementedAgentConfig(
-    AgentConfig, type=AgentType.RESTFUL_USER_IMPLEMENTED.value  # type: ignore
+    AgentConfig,
+    type=AgentType.RESTFUL_USER_IMPLEMENTED.value,  # type: ignore
 ):
     class EndpointConfig(BaseModel):
         url: str
@@ -221,3 +224,8 @@ class RESTfulAgentText(RESTfulAgentOutput, type=RESTfulAgentOutputType.TEXT):  #
 
 class RESTfulAgentEnd(RESTfulAgentOutput, type=RESTfulAgentOutputType.END):  # type: ignore
     pass
+
+
+class OnsaiGPTAgentConfig(AgentConfig, type=AgentType.ONSAI_AGENT.value):  # type: ignore
+    base_url: Optional[str]
+    send_raw_ssml: bool = True
